@@ -5,4 +5,4 @@ data class BankAccount(
     val branch: String,
     val accountNumber: String,
     val accountType: String
-)
+) {}
