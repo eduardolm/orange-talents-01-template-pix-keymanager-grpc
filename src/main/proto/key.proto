@@ -28,6 +28,11 @@ message KeyResponseRest {
     string createdAt = 3;
 }
 
+message ErrorDetails {
+  int32 code = 1;
+  string message = 2;
+}
+
 enum AccountType {
   UNKNOWN_ACCOUNT_TYPE = 0;
   CONTA_CORRENTE = 1;

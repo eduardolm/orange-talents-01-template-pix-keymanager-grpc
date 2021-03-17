@@ -17,27 +17,21 @@ class KeyGrpcServer(@Inject val keyService: KeyService) : KeyServiceGrpc.KeyServ
 
     private val logger: Logger = LoggerFactory.getLogger(KeyGrpcServer::class.java)
 
-    override fun create(request: KeyRequestRest?, responseObserver: StreamObserver<KeyResponseRest>?) {
-        logger.info("Obtendo chave para o request: $request")
+    override fun create(request: KeyRequestRest?, responseObserver: StreamObserver<KeyResponseRest>) {
 
-        println("\nRequest recebido por gRPC da API REST: ")
-        println(request)
-
+        logger.info("Cadastro de Chave Pix...")
         val createPixKeyRequest: CreatePixKeyRequest? = request?.let { ReceivedKeyRequestDto(it).toModel() }
-        println("\n Request a ser enviado para o BCB: ")
-        println(createPixKeyRequest)
 
-        val result = keyService.create(createPixKeyRequest!!)
+        try {
+            val result = keyService.createPixKey(createPixKeyRequest!!)
 
+            val response = keyService.buildKeyResponseRest(result, createPixKeyRequest)
+            responseObserver.onNext(response)
+            responseObserver.onCompleted()
 
-        val response = KeyResponseRest.newBuilder()
-            .setClientId(result.owner.taxIdNumber)
-            .setPixId(result.key)
-            .setCreatedAt(result.createdAt).build()
-
-        logger.info("Chave gerada: $response")
-
-        responseObserver!!.onNext(response)
-        responseObserver.onCompleted()
+        } catch (e: Exception) {
+            keyService.buildErrorResponse(responseObserver)
+            return
+        }
     }
 }

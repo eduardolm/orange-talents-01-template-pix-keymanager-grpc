@@ -1,6 +1,7 @@
 micronaut:
   application:
     name: keyManagerGrpc
+
 datasources:
   default:
     url: jdbc:mysql://localhost:3306/pix
@@ -16,5 +17,8 @@ jpa:
       hibernate:
         hbm2ddl:
           auto: update
+        show-sql: true
+
+
 
 
