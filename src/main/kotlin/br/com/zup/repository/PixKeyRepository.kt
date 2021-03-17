@@ -4,8 +4,10 @@ import br.com.zup.model.PixKey
 import io.micronaut.context.annotation.Executable
 import io.micronaut.data.annotation.Repository
 import io.micronaut.data.jpa.repository.JpaRepository
+import java.util.*
 
 @Repository
 interface PixKeyRepository : JpaRepository<PixKey, String> {
     fun existsByPixKey(key: String): Boolean
+    fun findByPixKey(key: String): Optional<PixKey>
 }

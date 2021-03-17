@@ -12,7 +12,18 @@ service KeyService {
   rpc create(KeyRequestRest) returns (KeyResponseRest) {}
 //  rpc list(KeyRequestList) returns (KeyResponseList) {}
 //  rpc getById(KeyRequestById) returns(KeyResponseById) {}
-//  rpc delete(KeyRequestById) returns(KeyResponseById) {}
+  rpc delete(KeyRemoveRequest) returns(KeyRemoveResponse) {}
+}
+
+message KeyRemoveRequest {
+  string key = 1;
+  string participant = 2;
+}
+
+message KeyRemoveResponse {
+  string key = 1;
+  string participant = 2;
+  string deletedAt = 3;
 }
 
 message KeyRequestRest {

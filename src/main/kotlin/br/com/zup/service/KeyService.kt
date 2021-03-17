@@ -1,9 +1,13 @@
 package br.com.zup.service
 
 import br.com.zup.ErrorDetails
+import br.com.zup.KeyRemoveRequest
+import br.com.zup.KeyRemoveResponse
 import br.com.zup.KeyResponseRest
 import br.com.zup.dto.request.CreatePixKeyRequest
+import br.com.zup.dto.request.RemoveKeyRequestDto
 import br.com.zup.exception.KeyAlreadyRegisteredException
+import br.com.zup.exception.KeyNotFoundException
 import br.com.zup.model.PixKey
 import br.com.zup.repository.PixKeyRepository
 import com.google.protobuf.Any
@@ -13,6 +17,7 @@ import io.grpc.protobuf.StatusProto
 import io.grpc.stub.StreamObserver
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -37,15 +42,21 @@ class KeyService(@Inject val bcbClient: BcbClient, @Inject val repository: PixKe
         return newKey
     }
 
-    fun buildErrorResponse(responseObserver: StreamObserver<KeyResponseRest>) {
+    fun buildErrorResponse(
+        responseObserver: StreamObserver<*>,
+        codeNumber: Int,
+        message: String,
+        httpStatusCode: Int,
+        httpMessage: String
+    ) {
         val statusProto: Status = Status.newBuilder()
-            .setCode(Code.ALREADY_EXISTS.number)
-            .setMessage("Chave já cadastrada.")
+            .setCode(codeNumber)
+            .setMessage(message)
             .addDetails(
                 Any.pack(
                     ErrorDetails.newBuilder()
-                        .setCode(422)
-                        .setMessage("UNPROCESSABLE_ENTITY")
+                        .setCode(httpStatusCode)
+                        .setMessage(httpMessage)
                         .build()
                 )
             )
@@ -60,4 +71,24 @@ class KeyService(@Inject val bcbClient: BcbClient, @Inject val repository: PixKe
             .setPixId(result.pixKey)
             .setCreatedAt(result.createdAt).build()
     }
+
+    fun deletePixKey(request: RemoveKeyRequestDto): KeyRemoveResponse? {
+
+        logger.info("Iniciando remoção de Chave Pix: ${request.key}")
+
+        val pixKeyToDelete: KeyRemoveResponse? = repository.findByPixKey(request.key)
+            .map { bcbClient.delete(it.pixKey, request)
+            }
+            .map { KeyRemoveResponse.newBuilder()
+                .setKey(it.key)
+                .setParticipant(it.participant)
+                .setDeletedAt(it.deletedAt)
+                .build() }
+            .orElseThrow { throw KeyNotFoundException("Chave não encontrada ou não pertence ao usuário.") }
+
+        repository.delete(repository.findByPixKey(request.key).get())
+
+        return pixKeyToDelete
+    }
 }
+

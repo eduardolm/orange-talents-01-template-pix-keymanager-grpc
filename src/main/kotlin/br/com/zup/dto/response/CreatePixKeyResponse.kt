@@ -19,7 +19,7 @@ data class CreatePixKeyResponse(
             ownerId = createPixKeyRequest.owner.id,
             bankBranch = bankAccount.branch,
             bankAccountNumber = bankAccount.accountNumber,
-            bankName = bankAccount.participant,
+            bankParticipant = bankAccount.participant,
             bankAccountType = bankAccount.accountType,
             bankAccountOwner = owner.name,
             createdAt = createdAt
