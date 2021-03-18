@@ -2,8 +2,9 @@ package br.com.zup.config
 
 import br.com.zup.*
 import br.com.zup.dto.request.CreatePixKeyRequest
+import br.com.zup.dto.request.ReceivedKeyRemoveRequestDto
 import br.com.zup.dto.request.ReceivedKeyRequestDto
-import br.com.zup.dto.request.RemoveKeyRequestDto
+import br.com.zup.exception.KeyAlreadyRegisteredException
 import br.com.zup.exception.KeyNotFoundException
 import br.com.zup.service.KeyService
 import com.google.rpc.Code
@@ -30,7 +31,10 @@ class KeyGrpcServer(@Inject val keyService: KeyService) : KeyServiceGrpc.KeyServ
             responseObserver.onNext(response)
             responseObserver.onCompleted()
 
-        } catch (e: Exception) {
+        } catch (e: KeyAlreadyRegisteredException) {
+
+            logger.error("Chave: ${request?.let {it.key}} já cadastrada.")
+
             keyService.buildErrorResponse(
                 responseObserver,
                 Code.ALREADY_EXISTS.number,
@@ -45,14 +49,16 @@ class KeyGrpcServer(@Inject val keyService: KeyService) : KeyServiceGrpc.KeyServ
     override fun delete(request: KeyRemoveRequest?, responseObserver: StreamObserver<KeyRemoveResponse>?) {
 
         logger.info("Remoção de Chave Pix...")
-        val keyRemoveRequest: RemoveKeyRequestDto? = request?.let { RemoveKeyRequestDto(it) }
+        val receivedKeyRemoveKeyRequestDto: ReceivedKeyRemoveRequestDto? = request?.let { ReceivedKeyRemoveRequestDto(it) }
 
         try {
-            val result = keyService.deletePixKey(keyRemoveRequest!!)
+            val result = keyService.deletePixKey(receivedKeyRemoveKeyRequestDto!!)
             responseObserver?.onNext(result)
             responseObserver?.onCompleted()
 
         } catch (e: KeyNotFoundException) {
+
+            logger.error("Chave: ${request?.let {it.pixId}} não encontrada")
 
             keyService.buildErrorResponse(
                 responseObserver!!,

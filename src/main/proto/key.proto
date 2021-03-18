@@ -16,8 +16,8 @@ service KeyService {
 }
 
 message KeyRemoveRequest {
-  string key = 1;
-  string participant = 2;
+  string pixId = 1;
+  string clientId = 2;
 }
 
 message KeyRemoveResponse {
