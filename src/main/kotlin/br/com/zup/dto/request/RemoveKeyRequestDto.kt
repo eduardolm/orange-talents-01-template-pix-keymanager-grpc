@@ -1,8 +1,9 @@
 package br.com.zup.dto.request
 
-import br.com.zup.KeyRemoveRequest
+import br.com.zup.model.PixKey
 
-class RemoveKeyRequestDto(keyRemoveRequest: KeyRemoveRequest) {
-    val key: String = keyRemoveRequest.key
-    val participant: String = keyRemoveRequest.participant
+class RemoveKeyRequestDto(pixKey: PixKey) {
+
+    val key: String = pixKey.pixKey
+    val participant: String = pixKey.bankParticipant
 }

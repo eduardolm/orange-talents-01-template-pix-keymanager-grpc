@@ -1,23 +1,22 @@
 package br.com.zup.service
 
 import br.com.zup.ErrorDetails
-import br.com.zup.KeyRemoveRequest
 import br.com.zup.KeyRemoveResponse
 import br.com.zup.KeyResponseRest
 import br.com.zup.dto.request.CreatePixKeyRequest
+import br.com.zup.dto.request.ReceivedKeyRemoveRequestDto
 import br.com.zup.dto.request.RemoveKeyRequestDto
 import br.com.zup.exception.KeyAlreadyRegisteredException
 import br.com.zup.exception.KeyNotFoundException
 import br.com.zup.model.PixKey
 import br.com.zup.repository.PixKeyRepository
 import com.google.protobuf.Any
-import com.google.rpc.Code
 import com.google.rpc.Status
+import io.grpc.Context.key
 import io.grpc.protobuf.StatusProto
 import io.grpc.stub.StreamObserver
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -72,23 +71,29 @@ class KeyService(@Inject val bcbClient: BcbClient, @Inject val repository: PixKe
             .setCreatedAt(result.createdAt).build()
     }
 
-    fun deletePixKey(request: RemoveKeyRequestDto): KeyRemoveResponse? {
+    fun deletePixKey(request: ReceivedKeyRemoveRequestDto): KeyRemoveResponse? {
 
-        logger.info("Iniciando remoção de Chave Pix: ${request.key}")
+        logger.info("Iniciando remoção de Chave Pix: ${request.pixId}")
 
-        val pixKeyToDelete: KeyRemoveResponse? = repository.findByPixKey(request.key)
-            .map { bcbClient.delete(it.pixKey, request)
+        return repository.findByPixIdAndOwnerId(request.pixId, request.clientId)
+            .map {
+                repository.delete(it)
+                return@map bcbClient.delete(it.pixKey, RemoveKeyRequestDto(it))
             }
-            .map { KeyRemoveResponse.newBuilder()
-                .setKey(it.key)
-                .setParticipant(it.participant)
-                .setDeletedAt(it.deletedAt)
-                .build() }
+            .map {
+                KeyRemoveResponse.newBuilder()
+                    .setKey(it.key)
+                    .setParticipant(it.participant)
+                    .setDeletedAt(it.deletedAt)
+                    .build()
+            }
             .orElseThrow { throw KeyNotFoundException("Chave não encontrada ou não pertence ao usuário.") }
-
-        repository.delete(repository.findByPixKey(request.key).get())
-
-        return pixKeyToDelete
+//        val result = KeyRemoveResponse.newBuilder()
+//                    .setKey(teste.get().key)
+//                    .setParticipant(teste.get().participant)
+//                    .setDeletedAt(teste.get().deletedAt)
+//                    .build()
+//        return result
     }
 }
 
