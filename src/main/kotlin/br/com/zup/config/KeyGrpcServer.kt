@@ -2,6 +2,7 @@ package br.com.zup.config
 
 import br.com.zup.*
 import br.com.zup.dto.request.CreatePixKeyRequest
+import br.com.zup.dto.request.KeyRequestByIdDto
 import br.com.zup.dto.request.ReceivedKeyRemoveRequestDto
 import br.com.zup.dto.request.ReceivedKeyRequestDto
 import br.com.zup.exception.KeyAlreadyRegisteredException
@@ -25,7 +26,7 @@ class KeyGrpcServer(@Inject val keyService: KeyService) : KeyServiceGrpc.KeyServ
         val createPixKeyRequest: CreatePixKeyRequest? = request?.let { ReceivedKeyRequestDto(it).toModel() }
 
         try {
-            val result = keyService.createPixKey(createPixKeyRequest!!)
+            val result = keyService.createPixKey(createPixKeyRequest!!, request)
 
             val response = keyService.buildKeyResponseRest(result, createPixKeyRequest)
             responseObserver.onNext(response)
@@ -49,7 +50,7 @@ class KeyGrpcServer(@Inject val keyService: KeyService) : KeyServiceGrpc.KeyServ
     override fun delete(request: KeyRemoveRequest?, responseObserver: StreamObserver<KeyRemoveResponse>?) {
 
         logger.info("Remoção de Chave Pix...")
-        val receivedKeyRemoveKeyRequestDto: ReceivedKeyRemoveRequestDto? = request?.let { ReceivedKeyRemoveRequestDto(it) }
+        val receivedKeyRemoveKeyRequestDto: ReceivedKeyRemoveRequestDto? = request?.let {ReceivedKeyRemoveRequestDto(it)}
 
         try {
             val result = keyService.deletePixKey(receivedKeyRemoveKeyRequestDto!!)
@@ -68,6 +69,31 @@ class KeyGrpcServer(@Inject val keyService: KeyService) : KeyServiceGrpc.KeyServ
                 "BAD_REQUEST"
             )
             return
+        }
+    }
+
+    override fun retrievePixKey(request: PixKeyRequest?, responseObserver: StreamObserver<PixKeyResponse>?) {
+
+        with(request) {
+            try {
+                val result = keyService.getPixKeyById(this?.let { KeyRequestByIdDto(it) })
+
+                responseObserver?.onNext(result)
+                responseObserver?.onCompleted()
+
+            } catch (e: KeyNotFoundException) {
+
+            logger.error("Chave: ${request?.pixKey} não encontrada")
+
+            keyService.buildErrorResponse(
+                responseObserver!!,
+                Code.NOT_FOUND.number,
+                "Chave não encontrada.",
+                404,
+                "NOT_FOUND"
+            )
+            return
+        }
         }
     }
 }
