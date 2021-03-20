@@ -1,31 +1,31 @@
 package br.com.zup.service
 
-import br.com.zup.ErrorDetails
-import br.com.zup.KeyRemoveResponse
-import br.com.zup.KeyResponseRest
+import br.com.zup.*
 import br.com.zup.dto.request.CreatePixKeyRequest
+import br.com.zup.dto.request.KeyRequestByIdDto
 import br.com.zup.dto.request.ReceivedKeyRemoveRequestDto
 import br.com.zup.dto.request.RemoveKeyRequestDto
 import br.com.zup.exception.KeyAlreadyRegisteredException
 import br.com.zup.exception.KeyNotFoundException
+import br.com.zup.factory.RetrievePixKeyFactory
 import br.com.zup.model.PixKey
 import br.com.zup.repository.PixKeyRepository
 import com.google.protobuf.Any
 import com.google.rpc.Status
-import io.grpc.Context.key
 import io.grpc.protobuf.StatusProto
 import io.grpc.stub.StreamObserver
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class KeyService(@Inject val bcbClient: BcbClient, @Inject val repository: PixKeyRepository) {
+class KeyService(@Inject val bcbClient: BcbClient, @Inject val repository: PixKeyRepository, @Inject val parser: RetrievePixKeyFactory) {
 
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
-    fun createPixKey(createPixKeyRequest: CreatePixKeyRequest): PixKey {
+    fun createPixKey(createPixKeyRequest: CreatePixKeyRequest, request: KeyRequestRest): PixKey {
 
         logger.info("Iniciando cadastro de chave Pix: $createPixKeyRequest")
 
@@ -34,7 +34,9 @@ class KeyService(@Inject val bcbClient: BcbClient, @Inject val repository: PixKe
             throw KeyAlreadyRegisteredException("Chave Pix ${createPixKeyRequest.key} já cadastrada")
         }
 
-        val newKey = bcbClient.create(createPixKeyRequest).toModel(createPixKeyRequest)
+        val newKey = bcbClient.create(createPixKeyRequest).toModel()
+        newKey.bankName = request.bankAccount.institution.name
+        newKey.ownerId = request.owner.id
         repository.save(newKey)
 
         logger.info("Chave Pix gerada: ${newKey.pixKey}")
@@ -87,13 +89,15 @@ class KeyService(@Inject val bcbClient: BcbClient, @Inject val repository: PixKe
                     .setDeletedAt(it.deletedAt)
                     .build()
             }
-            .orElseThrow { throw KeyNotFoundException("Chave não encontrada ou não pertence ao usuário.") }
-//        val result = KeyRemoveResponse.newBuilder()
-//                    .setKey(teste.get().key)
-//                    .setParticipant(teste.get().participant)
-//                    .setDeletedAt(teste.get().deletedAt)
-//                    .build()
-//        return result
+            .orElseThrow { throw KeyNotFoundException("Chave não encontrada ou não pertence ao usuário.")
+            }
+    }
+
+    fun getPixKeyById(keyRequestById: KeyRequestByIdDto?): PixKeyResponse? {
+
+        logger.info("Iniciando consulta à chave Pix...")
+
+        return parser.createFromRequest(keyRequestById).retrievePixKey(keyRequestById)
     }
 }
 

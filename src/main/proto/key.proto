@@ -6,13 +6,61 @@ option java_outer_classname = "Key";
 option objc_class_prefix = "HLW";
 
 package br.com.zup;
-import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
 
 service KeyService {
   rpc create(KeyRequestRest) returns (KeyResponseRest) {}
-//  rpc list(KeyRequestList) returns (KeyResponseList) {}
-//  rpc getById(KeyRequestById) returns(KeyResponseById) {}
+  //  rpc list(KeyRequestList) returns (KeyResponseList) {}
   rpc delete(KeyRemoveRequest) returns(KeyRemoveResponse) {}
+  rpc retrievePixKey(PixKeyRequest) returns(PixKeyResponse) {}
+}
+
+message PixKeyRequest {
+  oneof Filter {
+    string pixKey = 1;
+    PixIdAndClientId pixIdAndClientId = 2;
+  }
+}
+
+message PixIdAndClientId {
+  string pixId = 1;
+  string clientId = 2;
+}
+
+message PixKeyResponse {
+  string pixId = 1;
+  string clientId = 2;
+  KeyType keyType = 3;
+  string pixKey = 4;
+  ResponseOwner owner = 5;
+  ResponseAccount account = 6;
+  string createdAt = 7;
+}
+
+message KeyRequestById {
+  string requestId = 1;
+  string clientId = 2;
+}
+
+message KeyResponseById {
+  string pixId = 1;
+  string clientId = 2;
+  string keyType = 3;
+  string pixKey = 4;
+  ResponseOwner owner = 5;
+  ResponseAccount account = 6;
+}
+
+message ResponseAccount {
+  string bankParticipant = 1;
+  string bankBranch = 2;
+  string bankAccountNumber = 3;
+  AccountType bankAccountType = 4;
+}
+
+message ResponseOwner {
+  string name = 1;
+  string taxIdNumber = 2;
 }
 
 message KeyRemoveRequest {
@@ -34,9 +82,9 @@ message KeyRequestRest {
 }
 
 message KeyResponseRest {
-    string clientId = 1;
-    string pixId = 2;
-    string createdAt = 3;
+  string clientId = 1;
+  string pixId = 2;
+  string createdAt = 3;
 }
 
 message ErrorDetails {
@@ -77,8 +125,13 @@ message OwnerResponse {
 }
 
 message BankAccount {
-  string participant = 1;
-  string branch = 2;
-  string accountNumber = 3;
-  string accountType = 4;
+  string branch = 1;
+  string accountNumber = 2;
+  string accountType = 3;
+  Institution institution = 4;
+}
+
+message Institution {
+  string name = 1;
+  string participant = 2;
 }
