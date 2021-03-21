@@ -16,14 +16,7 @@ service KeyService {
 }
 
 message PixKeyRequest {
-  oneof Filter {
-    string pixKey = 1;
-    PixIdAndClientId pixIdAndClientId = 2;
-  }
-}
-
-message PixIdAndClientId {
-  string pixId = 1;
+  string pixKey = 1;
   string clientId = 2;
 }
 
@@ -33,22 +26,8 @@ message PixKeyResponse {
   KeyType keyType = 3;
   string pixKey = 4;
   ResponseOwner owner = 5;
-  ResponseAccount account = 6;
+  BankAccount account = 6;
   string createdAt = 7;
-}
-
-message KeyRequestById {
-  string requestId = 1;
-  string clientId = 2;
-}
-
-message KeyResponseById {
-  string pixId = 1;
-  string clientId = 2;
-  string keyType = 3;
-  string pixKey = 4;
-  ResponseOwner owner = 5;
-  ResponseAccount account = 6;
 }
 
 message ResponseAccount {

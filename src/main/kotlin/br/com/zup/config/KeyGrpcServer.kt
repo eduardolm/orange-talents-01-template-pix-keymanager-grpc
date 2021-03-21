@@ -76,7 +76,7 @@ class KeyGrpcServer(@Inject val keyService: KeyService) : KeyServiceGrpc.KeyServ
 
         with(request) {
             try {
-                val result = keyService.getPixKeyById(this?.let { KeyRequestByIdDto(it) })
+                val result = keyService.getPixKeyById(this?.let { KeyRequestByIdDto(it.pixKey, it.clientId) })
 
                 responseObserver?.onNext(result)
                 responseObserver?.onCompleted()
