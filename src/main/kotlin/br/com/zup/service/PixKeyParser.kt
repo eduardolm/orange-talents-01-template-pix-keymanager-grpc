@@ -5,6 +5,7 @@ import br.com.zup.dto.request.KeyRequestByIdDto
 import br.com.zup.exception.KeyNotFoundException
 import br.com.zup.factory.KeyParser
 import br.com.zup.model.PixKey
+import br.com.zup.repository.BankRepository
 import br.com.zup.repository.PixKeyRepository
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -12,20 +13,24 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class PixKeyParser(@Inject val repository: PixKeyRepository, @Inject val bcbClient: BcbClient) : KeyParser {
+class PixKeyParser(
+    @Inject val repository: PixKeyRepository,
+    @Inject val bcbClient: BcbClient,
+    @Inject val bankRepository: BankRepository
+) : KeyParser {
 
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
-    override fun retrievePixKey(keyRequestById: KeyRequestByIdDto?): PixKeyResponse? {
-        keyRequestById?.let { retrieveKey ->
+    override fun retrievePixKey(request: KeyRequestByIdDto?): PixKeyResponse? {
+        request?.let { retrieveKey ->
 
-            return repository.findByPixKey(retrieveKey.pixKey)
+            return repository.findByPixKey(retrieveKey.id)
                 .map {
                     logger.info("Chave Pix: ${it.pixKey}")
                     return@map buildRetrieveKeyByPixKey(it)
                 }
                 .orElseGet {
-                    bcbClient.findById(retrieveKey.pixKey).map {
+                    bcbClient.findById(retrieveKey.id).map {
                         it.toModel()
                     }
                         .map {
@@ -34,8 +39,8 @@ class PixKeyParser(@Inject val repository: PixKeyRepository, @Inject val bcbClie
                         }
                         .orElseThrow {
 
-                            logger.error("Chave Pix: ${keyRequestById.pixKey} não encontrada.")
-                            throw KeyNotFoundException("Chave Pix: ${keyRequestById.pixKey} não encontrada.")
+                            logger.error("Chave Pix: ${request.id} não encontrada.")
+                            throw KeyNotFoundException("Chave Pix: ${request.id} não encontrada.")
                         }
                 }
         }
@@ -43,6 +48,10 @@ class PixKeyParser(@Inject val repository: PixKeyRepository, @Inject val bcbClie
     }
 
     fun buildRetrieveKeyByPixKey(pixKey: PixKey): PixKeyResponse? {
+
+        val bankInfo = bankRepository.findByParticipant(pixKey.bankParticipant)
+        val teste = bankRepository.findAll()
+
         return pixKey.let {
             PixKeyResponse.newBuilder()
                 .setPixId("0")
@@ -50,18 +59,21 @@ class PixKeyParser(@Inject val repository: PixKeyRepository, @Inject val bcbClie
                 .setKeyType(KeyType.valueOf(it.keyType))
                 .setPixKey(it.pixKey)
                 .setAccount(
-                    ResponseAccount.newBuilder()
-                    .setBankParticipant(it.bankParticipant)
-                    .setBankBranch(it.bankBranch)
-                    .setBankAccountNumber(it.bankAccountNumber)
-                    .setBankAccountType(AccountType.valueOf(if (it.bankAccountType == "CACC") "CONTA_CORRENTE"
-                    else "CONTA_POUPANCA"))
-                    .build())
+                    BankAccount.newBuilder()
+                        .setInstitution(Institution.newBuilder()
+                            .setName(bankInfo.get().name)
+                            .setParticipant(bankInfo.get().participant)
+                            .build())
+                        .setBranch(it.bankBranch)
+                        .setAccountNumber(it.bankAccountNumber)
+                        .setAccountType(if (it.bankAccountType == "CACC") "CONTA_CORRENTE"
+                        else "CONTA_POUPANCA")
+                        .build())
                 .setOwner(
                     ResponseOwner.newBuilder()
-                    .setName(it.ownerName)
-                    .setTaxIdNumber(it.ownerTaxIdNumber)
-                    .build())
+                        .setName(it.ownerName)
+                        .setTaxIdNumber(it.ownerTaxIdNumber)
+                        .build())
                 .setCreatedAt(it.createdAt)
                 .build()
         }
