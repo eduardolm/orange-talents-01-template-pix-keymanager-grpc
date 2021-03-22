@@ -10,9 +10,26 @@ import "google/protobuf/struct.proto";
 
 service KeyService {
   rpc create(KeyRequestRest) returns (KeyResponseRest) {}
-  //  rpc list(KeyRequestList) returns (KeyResponseList) {}
+  rpc list(KeyListRequest) returns (KeyListResponse) {}
   rpc delete(KeyRemoveRequest) returns(KeyRemoveResponse) {}
   rpc retrievePixKey(PixKeyRequest) returns(PixKeyResponse) {}
+}
+
+message KeyListRequest {
+  string clientId = 1;
+}
+
+message KeyListResponse {
+
+  message PixKeyItem {
+    string pixId = 1;
+    KeyType keyType = 2;
+    string pixKey = 3;
+    AccountType accountType = 4;
+    string createdAt = 5;
+  }
+  string clientId = 1;
+  repeated PixKeyItem pixKeys = 2;
 }
 
 message PixKeyRequest {

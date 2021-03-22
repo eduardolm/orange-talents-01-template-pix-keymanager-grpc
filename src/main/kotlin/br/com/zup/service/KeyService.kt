@@ -17,6 +17,7 @@ import io.grpc.stub.StreamObserver
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.util.*
+import java.util.stream.Collectors
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -98,6 +99,39 @@ class KeyService(@Inject val bcbClient: BcbClient, @Inject val repository: PixKe
         logger.info("Iniciando consulta à chave Pix...")
 
         return parser.createFromRequest(keyRequestById).retrievePixKey(keyRequestById)
+    }
+
+    fun findAllByClientId(clientId: String?): MutableList<KeyListResponse.PixKeyItem>? {
+
+        clientId?.let {
+            if (it.isNullOrBlank()) throw IllegalArgumentException("ClientId não pode ser nulo ou vazio. ") }
+
+        return clientId?.let { idClient ->
+            repository.findAllByOwnerId(idClient)?.stream()?.map { buildPixKeyItem(it) }?.collect(Collectors.toList())
+        }
+    }
+
+    fun buildPixKeyItem(it: PixKey) = KeyListResponse.PixKeyItem.newBuilder()
+        .setPixId(it.pixId)
+        .setKeyType(KeyType.valueOf(it.keyType))
+        .setPixKey(it.pixKey)
+        .setAccountType(
+            AccountType.valueOf(
+                when (it.bankAccountType) {
+                    "CACC" -> "CONTA_CORRENTE"
+                    "SVGS" -> "CONTA_POUPANCA"
+                    else -> "TIPO_DESCONHECIDO"
+                }
+            )
+        )
+        .setCreatedAt(it.createdAt)
+        .build()
+
+    fun buildKeyListResponse(request: KeyListRequest?, result: List<KeyListResponse.PixKeyItem>?): KeyListResponse? {
+        return KeyListResponse.newBuilder()
+            .setClientId(request?.clientId)
+            .addAllPixKeys(result)
+            .build()
     }
 }
 

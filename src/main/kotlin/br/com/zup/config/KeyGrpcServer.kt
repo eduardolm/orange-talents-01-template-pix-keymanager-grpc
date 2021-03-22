@@ -72,21 +72,21 @@ class KeyGrpcServer(@Inject val keyService: KeyService) : KeyServiceGrpc.KeyServ
         }
     }
 
-    override fun retrievePixKey(request: PixKeyRequest?, responseObserver: StreamObserver<PixKeyResponse>?) {
+    override fun retrievePixKey(request: PixKeyRequest?, responseObserver: StreamObserver<PixKeyResponse>) {
 
         with(request) {
             try {
                 val result = keyService.getPixKeyById(this?.let { KeyRequestByIdDto(it.pixKey, it.clientId) })
 
-                responseObserver?.onNext(result)
-                responseObserver?.onCompleted()
+                responseObserver.onNext(result)
+                responseObserver.onCompleted()
 
             } catch (e: KeyNotFoundException) {
 
             logger.error("Chave: ${request?.pixKey} não encontrada")
 
             keyService.buildErrorResponse(
-                responseObserver!!,
+                responseObserver,
                 Code.NOT_FOUND.number,
                 "Chave não encontrada.",
                 404,
@@ -94,6 +94,34 @@ class KeyGrpcServer(@Inject val keyService: KeyService) : KeyServiceGrpc.KeyServ
             )
             return
         }
+        }
+    }
+
+    override fun list(request: KeyListRequest?, responseObserver: StreamObserver<KeyListResponse>?) {
+
+        with(request) {
+            try {
+
+                val result = keyService.findAllByClientId(this?.clientId)
+
+                responseObserver?.onNext(keyService.buildKeyListResponse(request, result))
+                responseObserver?.onCompleted()
+
+            } catch (e: IllegalArgumentException) {
+
+                logger.error("Cliente: ${request?.clientId} não encontrado.")
+
+                if (responseObserver != null) {
+                    keyService.buildErrorResponse(
+                        responseObserver,
+                        Code.UNKNOWN.number,
+                        "Cliente não encontrado.",
+                        404,
+                        "NOT_FOUND"
+                    )
+                }
+                return
+            }
         }
     }
 }

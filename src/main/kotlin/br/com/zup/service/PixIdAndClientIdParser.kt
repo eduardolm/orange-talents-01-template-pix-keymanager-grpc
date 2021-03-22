@@ -20,10 +20,11 @@ class PixIdAndClientIdParser(
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
     override fun retrievePixKey(request: KeyRequestByIdDto?): PixKeyResponse? {
+
         request?.let { retrieveKey ->
 
-            return retrieveKey.clientId?.let { clientId ->
-                repository.findByPixIdAndOwnerId(retrieveKey.id, clientId)
+            return request.clientId.let { clientId ->
+                repository.findByPixIdAndOwnerId(retrieveKey.id, clientId!!)
                     .map {
                         logger.info("Chave Pix: ${it.pixId}")
                         return@map buildRetrieveKeyByIdAndClientId(it)
@@ -47,7 +48,7 @@ class PixIdAndClientIdParser(
         return null
     }
 
-    fun buildRetrieveKeyByIdAndClientId(pixKey: PixKey): PixKeyResponse? {
+    private fun buildRetrieveKeyByIdAndClientId(pixKey: PixKey): PixKeyResponse {
 
         val bankInfo = bankRepository.findByParticipant(pixKey.bankParticipant)
 
