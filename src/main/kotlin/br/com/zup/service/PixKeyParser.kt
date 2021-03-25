@@ -50,7 +50,6 @@ class PixKeyParser(
     fun buildRetrieveKeyByPixKey(pixKey: PixKey): PixKeyResponse {
 
         val bankInfo = bankRepository.findByParticipant(pixKey.bankParticipant)
-        val teste = bankRepository.findAll()
 
         return pixKey.let {
             PixKeyResponse.newBuilder()
