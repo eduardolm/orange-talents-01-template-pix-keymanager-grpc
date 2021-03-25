@@ -12,6 +12,7 @@ import javax.validation.constraints.Size
 data class CreatePixKeyRequest(
     @field:NotBlank
     val keyType: String,
+    @field:NotBlank
     @field:Size(max = 77)
     val key: String,
     val bankAccount: BankAccount,
