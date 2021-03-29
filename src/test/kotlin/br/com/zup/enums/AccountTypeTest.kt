@@ -1,6 +1,5 @@
-package br.com.zup.anums
+package br.com.zup.enums
 
-import br.com.zup.enums.AccountType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 

@@ -34,7 +34,7 @@ class PixIdAndClientIdParser(
                             it.toModel()
                         }
                             .map {
-                                logger.info("Chave Pix: ${it.pixId}")
+                                logger.info("Chave Pix: ${request.id} retornada com sucesso")
                                 return@map buildRetrieveKeyByIdAndClientId(it)
                             }
                             .orElseThrow {
@@ -50,32 +50,32 @@ class PixIdAndClientIdParser(
 
     private fun buildRetrieveKeyByIdAndClientId(pixKey: PixKey): PixKeyResponse {
 
-        val bankInfo = bankRepository.findByParticipant(pixKey.bankParticipant)
-
-        return pixKey.let {
-            PixKeyResponse.newBuilder()
-                .setPixId(it.pixId)
-                .setClientId(it.ownerId)
-                .setKeyType(KeyType.valueOf(it.keyType))
-                .setPixKey(it.pixKey)
-                .setAccount(
-                    BankAccount.newBuilder()
-                        .setInstitution(Institution.newBuilder()
-                            .setName(bankInfo.get().name)
-                            .setParticipant(bankInfo.get().participant)
+        return bankRepository.findByParticipant(pixKey.bankParticipant).let {bankInfo ->
+            pixKey.let {
+                PixKeyResponse.newBuilder()
+                    .setPixId(it.pixId)
+                    .setClientId(it.ownerId)
+                    .setKeyType(KeyType.valueOf(it.keyType))
+                    .setPixKey(it.pixKey)
+                    .setAccount(
+                        BankAccount.newBuilder()
+                            .setInstitution(Institution.newBuilder()
+                                .setName(bankInfo.get().name)
+                                .setParticipant(bankInfo.get().participant)
+                                .build())
+                            .setBranch(it.bankBranch)
+                            .setAccountNumber(it.bankAccountNumber)
+                            .setAccountType(if (it.bankAccountType == "CACC") "CONTA_CORRENTE"
+                            else "CONTA_POUPANCA")
                             .build())
-                        .setBranch(it.bankBranch)
-                        .setAccountNumber(it.bankAccountNumber)
-                        .setAccountType(if (it.bankAccountType == "CACC") "CONTA_CORRENTE"
-                        else "CONTA_POUPANCA")
-                        .build())
-                .setOwner(
-                    ResponseOwner.newBuilder()
-                        .setName(it.ownerName)
-                        .setTaxIdNumber(it.ownerTaxIdNumber)
-                        .build())
-                .setCreatedAt(it.createdAt)
-                .build()
+                    .setOwner(
+                        ResponseOwner.newBuilder()
+                            .setName(it.ownerName)
+                            .setTaxIdNumber(it.ownerTaxIdNumber)
+                            .build())
+                    .setCreatedAt(it.createdAt)
+                    .build()
+            }
         }
     }
 }

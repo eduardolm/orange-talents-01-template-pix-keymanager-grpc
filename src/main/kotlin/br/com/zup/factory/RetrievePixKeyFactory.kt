@@ -6,10 +6,12 @@ import br.com.zup.repository.PixKeyRepository
 import br.com.zup.service.BcbClient
 import br.com.zup.service.PixIdAndClientIdParser
 import br.com.zup.service.PixKeyParser
+import io.micronaut.validation.Validated
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@Validated
 class RetrievePixKeyFactory(
     @Inject val repository: PixKeyRepository,
     @Inject val bcbClient: BcbClient,

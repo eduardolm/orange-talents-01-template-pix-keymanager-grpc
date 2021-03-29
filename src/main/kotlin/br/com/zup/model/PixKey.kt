@@ -1,13 +1,12 @@
 package br.com.zup.model
 
-import java.util.*
 import javax.persistence.Entity
 import javax.persistence.Id
 
 @Entity
 class PixKey(
     @Id
-    val pixId: String = UUID.randomUUID().toString(),
+    var pixId: String?,
     val keyType: String,
     val pixKey: String,
     var ownerId: String?,
@@ -22,4 +21,10 @@ class PixKey(
     val createdAt: String,
 ) {
 
+    override fun toString(): String {
+        return "PixKey(pixId=$pixId, keyType='$keyType', pixKey='$pixKey', ownerId=$ownerId, ownerType='$ownerType', " +
+                "ownerName='$ownerName', ownerTaxIdNumber='$ownerTaxIdNumber', bankBranch='$bankBranch', " +
+                "bankAccountNumber='$bankAccountNumber', bankParticipant='$bankParticipant', bankName=$bankName, " +
+                "bankAccountType='$bankAccountType', createdAt='$createdAt')"
+    }
 }
