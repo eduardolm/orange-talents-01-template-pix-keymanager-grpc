@@ -3,8 +3,10 @@ package br.com.zup.dto.response
 import br.com.zup.model.BankAccount
 import br.com.zup.model.Owner
 import br.com.zup.model.PixKey
+import java.util.*
 
 data class CreatePixKeyResponse(
+    val pixId: String = UUID.randomUUID().toString(),
     val keyType: String,
     val key: String,
     val bankAccount: BankAccount,
@@ -14,9 +16,10 @@ data class CreatePixKeyResponse(
 
     fun toModel(): PixKey {
         return PixKey(
+            pixId = pixId,
             keyType = keyType,
             pixKey = key,
-            ownerId = null,
+            ownerId = owner.id,
             ownerType = owner.type,
             ownerName = owner.name,
             ownerTaxIdNumber = owner.taxIdNumber,

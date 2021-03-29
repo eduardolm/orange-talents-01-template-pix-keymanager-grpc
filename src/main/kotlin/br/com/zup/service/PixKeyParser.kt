@@ -7,12 +7,14 @@ import br.com.zup.factory.KeyParser
 import br.com.zup.model.PixKey
 import br.com.zup.repository.BankRepository
 import br.com.zup.repository.PixKeyRepository
+import io.micronaut.validation.Validated
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@Validated
 class PixKeyParser(
     @Inject val repository: PixKeyRepository,
     @Inject val bcbClient: BcbClient,
@@ -47,34 +49,34 @@ class PixKeyParser(
         return null
     }
 
-    fun buildRetrieveKeyByPixKey(pixKey: PixKey): PixKeyResponse {
+    private fun buildRetrieveKeyByPixKey(pixKey: PixKey): PixKeyResponse {
 
-        val bankInfo = bankRepository.findByParticipant(pixKey.bankParticipant)
-
-        return pixKey.let {
-            PixKeyResponse.newBuilder()
-                .setPixId("0")
-                .setClientId("0")
-                .setKeyType(KeyType.valueOf(it.keyType))
-                .setPixKey(it.pixKey)
-                .setAccount(
-                    BankAccount.newBuilder()
-                        .setInstitution(Institution.newBuilder()
-                            .setName(bankInfo.get().name)
-                            .setParticipant(bankInfo.get().participant)
+        return bankRepository.findByParticipant(pixKey.bankParticipant).let {bankInfo ->
+            pixKey.let {
+                PixKeyResponse.newBuilder()
+                    .setPixId("0")
+                    .setClientId("0")
+                    .setKeyType(KeyType.valueOf(it.keyType))
+                    .setPixKey(it.pixKey)
+                    .setAccount(
+                        BankAccount.newBuilder()
+                            .setInstitution(Institution.newBuilder()
+                                .setName(bankInfo.get().name)
+                                .setParticipant(bankInfo.get().participant)
+                                .build())
+                            .setBranch(it.bankBranch)
+                            .setAccountNumber(it.bankAccountNumber)
+                            .setAccountType(if (it.bankAccountType == "CACC") "CONTA_CORRENTE"
+                            else "CONTA_POUPANCA")
                             .build())
-                        .setBranch(it.bankBranch)
-                        .setAccountNumber(it.bankAccountNumber)
-                        .setAccountType(if (it.bankAccountType == "CACC") "CONTA_CORRENTE"
-                        else "CONTA_POUPANCA")
-                        .build())
-                .setOwner(
-                    ResponseOwner.newBuilder()
-                        .setName(it.ownerName)
-                        .setTaxIdNumber(it.ownerTaxIdNumber)
-                        .build())
-                .setCreatedAt(it.createdAt)
-                .build()
+                    .setOwner(
+                        ResponseOwner.newBuilder()
+                            .setName(it.ownerName)
+                            .setTaxIdNumber(it.ownerTaxIdNumber)
+                            .build())
+                    .setCreatedAt(it.createdAt)
+                    .build()
+            }
         }
     }
 }

@@ -22,7 +22,11 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class KeyService(@Inject val bcbClient: BcbClient, @Inject val repository: PixKeyRepository, @Inject val parser: RetrievePixKeyFactory) {
+class KeyService(
+    @Inject val bcbClient: BcbClient,
+    @Inject val repository: PixKeyRepository,
+    @Inject val parser: RetrievePixKeyFactory
+) {
 
     private val logger: Logger = LoggerFactory.getLogger(this::class.java)
 
@@ -70,7 +74,7 @@ class KeyService(@Inject val bcbClient: BcbClient, @Inject val repository: PixKe
     fun buildKeyResponseRest(result: PixKey, createPixKeyRequest: CreatePixKeyRequest): KeyResponseRest? {
         return KeyResponseRest.newBuilder()
             .setClientId(createPixKeyRequest.owner.id)
-            .setPixId(result.pixKey)
+            .setPixId(result.pixId)
             .setCreatedAt(result.createdAt).build()
     }
 
@@ -90,7 +94,9 @@ class KeyService(@Inject val bcbClient: BcbClient, @Inject val repository: PixKe
                     .setDeletedAt(it.deletedAt)
                     .build()
             }
-            .orElseThrow { throw KeyNotFoundException("Chave não encontrada ou não pertence ao usuário.")
+            .orElseThrow {
+                logger.error("Chave ${request.pixId} não encontrada ou não pertence ao usuário.")
+                throw KeyNotFoundException("Chave não encontrada ou não pertence ao usuário.")
             }
     }
 
@@ -104,7 +110,7 @@ class KeyService(@Inject val bcbClient: BcbClient, @Inject val repository: PixKe
     fun findAllByClientId(clientId: String?): MutableList<KeyListResponse.PixKeyItem>? {
 
         clientId?.let {
-            if (it.isNullOrBlank()) throw IllegalArgumentException("ClientId não pode ser nulo ou vazio. ") }
+            if (it.isBlank()) throw IllegalArgumentException("ClientId não pode ser nulo ou vazio. ") }
 
         return clientId?.let { idClient ->
             repository.findAllByOwnerId(idClient)?.stream()?.map { buildPixKeyItem(it) }?.collect(Collectors.toList())

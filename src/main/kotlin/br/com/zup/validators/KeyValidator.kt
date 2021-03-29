@@ -18,11 +18,11 @@ class KeyValidator : ConstraintValidator<Key, CreatePixKeyRequest> {
         if (value == null) return true
 
         when(value.keyType) {
-            "CPF" -> return value.key?.matches("([0-9]{3}[.]?[0-9]{3}[.]?[0-9]{3}-[0-9]{2})|([0-9]{11})".toRegex())!!
-            "CNPJ" -> return value.key?.matches("([0-9]{2}[.]?[0-9]{3}[.]?[0-9]{3}[/]?[0-9]{4}[-]?[0-9]{2})".toRegex())!!
-            "PHONE" -> return value.key?.matches("^\\+[1-9][0-9]\\d{1,14}\$".toRegex())!!
-            "EMAIL" -> return value.key?.matches("(^[A-Za-z](.*)([@]{1})(.{1,})(\\.)(.+))".toRegex())!!
-            "RANDOM" -> return value.key.isNullOrBlank()
+            "CPF" -> return value.key.matches("([0-9]{3}[.]?[0-9]{3}[.]?[0-9]{3}-[0-9]{2})|([0-9]{11})".toRegex())
+            "CNPJ" -> return value.key.matches("([0-9]{2}[.]?[0-9]{3}[.]?[0-9]{3}[/]?[0-9]{4}[-]?[0-9]{2})".toRegex())
+            "PHONE" -> return value.key.matches("^\\+[1-9][0-9]\\d{1,14}\$".toRegex())
+            "EMAIL" -> return value.key.matches("(^[A-Za-z](.*)([@]{1})(.{1,})(\\.)(.+))".toRegex())
+            "RANDOM" -> return value.key.isBlank()
         }
         return true
     }
