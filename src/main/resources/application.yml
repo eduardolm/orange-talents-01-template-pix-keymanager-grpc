@@ -1,4 +1,6 @@
 micronaut:
+  server:
+    port: 8085
   application:
     name: keyManagerGrpc
 
@@ -19,6 +21,15 @@ jpa:
           auto: update
         show-sql: true
 
+endpoints:
+  all:
+    sensitive: true
+  health:
+    enabled: true
+    sensitive: false
+    details-visible: anonymous
 
-
-
+grpc:
+  server:
+    health:
+      enabled: true
