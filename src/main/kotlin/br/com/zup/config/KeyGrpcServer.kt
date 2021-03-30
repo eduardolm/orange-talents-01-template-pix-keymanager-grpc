@@ -5,6 +5,7 @@ import br.com.zup.dto.request.CreatePixKeyRequest
 import br.com.zup.dto.request.KeyRequestByIdDto
 import br.com.zup.dto.request.ReceivedKeyRemoveRequestDto
 import br.com.zup.dto.request.ReceivedKeyRequestDto
+import br.com.zup.exception.ErrorHandler
 import br.com.zup.exception.KeyAlreadyRegisteredException
 import br.com.zup.exception.KeyNotFoundException
 import br.com.zup.service.KeyService
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Singleton
 
+@ErrorHandler
 @Singleton
 class KeyGrpcServer(@Inject val keyService: KeyService) : KeyServiceGrpc.KeyServiceImplBase() {
 
