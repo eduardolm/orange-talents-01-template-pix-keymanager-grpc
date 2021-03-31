@@ -11,7 +11,6 @@ phases:
     commands:
       - echo Build started on `date`
       - gradle build
-      - gradle assemble
       - echo Build finished on `date`
   post_build:
     commands:
