@@ -9,7 +9,7 @@ import io.micronaut.http.annotation.*
 import io.micronaut.http.client.annotation.Client
 import java.util.*
 
-@Client("http://localhost:8082")
+@Client("\${bcb.pix.url}")
 interface BcbClient {
 
     @Post( "/api/v1/pix/keys", produces = [MediaType.APPLICATION_XML], consumes = [MediaType.APPLICATION_XML])
