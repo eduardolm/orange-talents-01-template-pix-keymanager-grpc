@@ -13,11 +13,11 @@ phases:
       - gradle clean
       - gradle build
       - gradle assemble
+      - echo ls build/libs
       - echo Build finished on `date`
   post_build:
     commands:
       - echo Build completed on `date`
 artifacts:
-  type: zip
   files:
     - 'build/libs/*.jar'
