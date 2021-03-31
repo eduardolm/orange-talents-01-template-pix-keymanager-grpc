@@ -9,11 +9,15 @@ phases:
       - echo skipped on `date`
   build:
     comamnds:
-      - gradle clean build assemble
-      - java -version
+      - echo Build started on `date`
+      - gradle clean
+      - gradle build
+      - gradle assemble
+      - echo Build finished on `date`
   post_build:
     commands:
       - echo Build completed on `date`
 artifacts:
+  type: zip
   files:
-    - build/libs/*.jar
+    - 'build/libs/*.jar'
