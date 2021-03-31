@@ -4,14 +4,14 @@ phases:
   install:
     runtime-version:
       java: corretto11
-  pre-build:
+  pre_build:
     commands:
       - echo skipped on `date`
   build:
     comamnds:
       - echo gradle clean build assemble on `date`
       - java -version
-  post-build:
+  post_build:
     commands:
       - echo Build completed on `date`
   artifacts:
