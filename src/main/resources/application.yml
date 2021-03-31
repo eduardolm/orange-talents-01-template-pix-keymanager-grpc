@@ -6,7 +6,7 @@ micronaut:
 
 datasources:
   default:
-    url: jdbc:mysql://localhost:3306/pix
+    url: ${DB_URL:jdbc:mysql://localhost:3306/pix}
     driverClassName: com.mysql.cj.jdbc.Driver
     username: ${DB_USER:root}
     password: ${DB_PASSWORD:2377168}
