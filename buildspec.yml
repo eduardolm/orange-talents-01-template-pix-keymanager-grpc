@@ -10,7 +10,6 @@ phases:
   build:
     comamnds:
       - echo Build started on `date`
-      - gradle clean
       - gradle build
       - gradle assemble
       - echo ls build/libs
