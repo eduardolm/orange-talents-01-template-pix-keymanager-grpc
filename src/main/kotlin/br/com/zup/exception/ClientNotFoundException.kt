@@ -1,5 +1,5 @@
 package br.com.zup.exception
 
-class ClientNotFoundException(s: String) : Exception() {
+class ClientNotFoundException(message: String) : Exception(message) {
 
 }

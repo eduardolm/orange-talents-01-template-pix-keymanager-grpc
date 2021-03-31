@@ -1,15 +1,17 @@
 micronaut:
+  server:
+    port: ${HTTP_PORT:8085}
   application:
     name: keyManagerGrpc
 
 datasources:
   default:
-    url: jdbc:mysql://localhost:3306/pix
+    url: ${DB_URL:jdbc:mysql://localhost:3306/pix}
     driverClassName: com.mysql.cj.jdbc.Driver
-    username: root
-    password: 2377168
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:2377168}
     schema-generate: CREATE_DROP
-    dialect: MYSQL8Dialect
+    dialect: ${DB_DIALECT:MySQL8Dialect}
 
 jpa:
   default:
@@ -19,6 +21,15 @@ jpa:
           auto: update
         show-sql: true
 
+endpoints:
+  all:
+    sensitive: true
+  health:
+    enabled: true
+    sensitive: false
+    details-visible: anonymous
 
-
-
+grpc:
+  server:
+    health:
+      enabled: true

@@ -1,4 +1,4 @@
 package br.com.zup.exception
 
-class KeyNotFoundException(s: String) : Exception() {
+class KeyNotFoundException(message: String) : RuntimeException(message) {
 }
