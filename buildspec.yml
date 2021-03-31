@@ -9,11 +9,7 @@ phases:
       - echo skipped on `date`
   build:
     comamnds:
-      - echo Build started on `date`
-      - gradle build
-      - gradle assemble
-      - echo ls build/libs
-      - echo Build finished on `date`
+      gradle cleam build assemble
   post_build:
     commands:
       - echo Build completed on `date`
