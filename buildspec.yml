@@ -9,7 +9,7 @@ phases:
       - echo skipped on `date`
   build:
     comamnds:
-      - echo gradle clean build assemble on `date`
+      - gradle clean build assemble
       - java -version
   post_build:
     commands:
