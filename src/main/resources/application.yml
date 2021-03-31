@@ -33,3 +33,7 @@ grpc:
   server:
     health:
       enabled: true
+
+bcb:
+  pix:
+    url: ${BCB_URL:`http://localhost:8082`}
