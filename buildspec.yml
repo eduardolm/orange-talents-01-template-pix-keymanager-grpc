@@ -8,8 +8,10 @@ phases:
     commands:
       - echo skipped on `date`
   build:
-    comamnds:
-      gradle clean build assemble
+    commands:
+      - echo Build started on `date`
+      - gradle clean build assemble
+      - echo Build finished on `date`
   post_build:
     commands:
       - echo Build completed on `date`
