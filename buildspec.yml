@@ -2,9 +2,8 @@ version: 0.2
 
 phases:
   install:
-    runtime-versions:
-      docker: 20
-      java: correto11
+    docker: 20
+    java: correto11
 
   build:
     commands:
