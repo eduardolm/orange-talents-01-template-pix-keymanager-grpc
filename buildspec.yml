@@ -16,11 +16,6 @@ phases:
       - echo Building the Docker image KeyManager-gRPC...
       - docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG .
 
-      - IMAGE_REPO_NAME1=key_manager_rest
-      - echo Build started on `date`
-      - echo Building the Docker image KeyManager-REST...
-      - docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME1:$IMAGE_TAG .
-
   post_build:
     commands:
       - echo Build completed on `date`
@@ -28,9 +23,7 @@ phases:
       - echo Logging into Amazon ECR...
       - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
       - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
-      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME2:$IMAGE_TAG
       - printf '[{"name": "key_manager_grpc_docker", "imageUri": "%s"}]\' $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
-      - printf '[{"name": "key_manager_rest_docker", "imageUri": "%s"}]\' $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME1:$IMAGE_TAG
       - sh build.sh
 
 artifacts:
