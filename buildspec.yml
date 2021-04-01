@@ -2,25 +2,47 @@ version: 0.2
 
 phases:
   install:
-    run-as: root
-    java: corretto11
-    commands:
-      - echo Installing Gralde v6.8.3
-      - wget https://services.gradle.org/distributions/gradle-6.8.3-bin.zip
-      - unzip -d /opt/gradle gradle-6.8.3-bin.zip
-  pre_build:
-    commands:
-      - echo skipped on `date`
+    runtime-versions:
+      docker: 20
+      java: correto11
+
   build:
     commands:
+      - IMAGE_REPO_NAME=key_manager_grpc
+      - AWS_ACCOUNT_ID="$account_id"
+      - AWS_DEFAULT_REGION=us-east-1
+      - IMAGE_TAG=latest
       - echo Build started on `date`
-      - /opt/gradle/gradle-6.8.3/bin/gradle clean
-      - /opt/gradle/gradle-6.8.3/bin/gradle build
-      - /opt/gradle/gradle-6.8.3/bin/gradle assemble
-      - echo Build finished on `date`
+      - echo Building the Docker image KeyManager-gRPC...
+      - docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG .
+
+      - IMAGE_REPO_NAME1=key_manager_rest
+      - echo Build started on `date`
+      - echo Building the Docker image KeyManager-REST...
+      - docker build -t $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME1:$IMAGE_TAG .
+
+      - echo Building the Docker image BCBPix...
+      - docker build -t public.ecr.aws/d8b2x5c9/orange-stack-sat-bcb-pix .
+
+      - echo Building the Docker image Itau-ERP...
+      - docker build -t public.ecr.aws/d8b2x5c9/orange-stack-sat-itau-erp .
+
   post_build:
     commands:
       - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - echo Logging into Amazon ECR...
+      - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME2:$IMAGE_TAG
+      - docker push public.ecr.aws/d8b2x5c9/orange-stack-sat-bcb-pix
+      - docker push public.ecr.aws/d8b2x5c9/orange-stack-sat-itau-erp
+      - printf '[{"name": "key_manager_grpc_docker", "imageUri": "%s"}]\' $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - printf '[{"name": "key_manager_rest_docker", "imageUri": "%s"}]\' $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME1:$IMAGE_TAG
+      - printf '[{"name": "bcb_pix_docker", "imageUri": "%s"}]\' public.ecr.aws/d8b2x5c9/orange-stack-sat-bcb-pix
+      - printf '[{"name": "itau_erp_docker", "imageUri": "%s"}]\' public.ecr.aws/d8b2x5c9/orange-stack-sat-itau-erp
+      - sh build.sh
+
 artifacts:
   files:
-    - 'build/libs/*.jar'
+    - imageDefinitions.json
