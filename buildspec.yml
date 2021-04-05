@@ -15,15 +15,11 @@ phases:
     commands:
       - echo Pre-build statrted on date `date`
       - echo Starting Gradle build...
-      - /opt/gradle/gradle-6.8.3/bin/gradle -b key-manager-grpc/build.gradle.kts clean
-      - /opt/gradle/gradle-6.8.3/bin/gradle -b key-manager-grpc/build.gradle.kts assemble
+      - /opt/gradle/gradle-6.8.3/bin/gradle clean
+      - /opt/gradle/gradle-6.8.3/bin/gradle assemble
       - echo Pre-build finished on `date`
   build:
     commands:
-      - IMAGE_REPO_NAME=key_manager_grpc
-      - AWS_ACCOUNT_ID="$account_id"
-      - AWS_DEFAULT_REGION=us-east-1
-      - IMAGE_TAG=latest
       - echo Build started on `date`
       - echo Building the Docker image KeyManager-gRPC...
       - docker build -t "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG" .
