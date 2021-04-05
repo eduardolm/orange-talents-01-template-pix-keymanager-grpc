@@ -11,7 +11,7 @@ phases:
       - unzip -d /opt/gradle gradle-6.8.3-bin.zip
       - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
       - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
-  pre-build:
+  pre_build:
     commands:
       - echo Pre-build statrted on date `date`
       - echo Starting Gradle build...
