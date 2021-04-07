@@ -1,0 +1,38 @@
+version: 0.2
+
+phases:
+  install:
+    run-as: root
+    runtime-versions:
+      java: corretto11
+    commands:
+      - echo Installing Gradle v6.8.3...
+      - wget https://services.gradle.org/distributions/gradle-6.8.3-bin.zip
+      - unzip -d /opt/gradle gradle-6.8.3-bin.zip
+      - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://127.0.0.1:2375 --storage-driver=overlay2 &
+      - timeout 15 sh -c "until docker info; do echo .; sleep 1; done"
+  pre_build:
+    commands:
+      - echo Pre-build statrted on date `date`
+      - echo Starting Gradle build...
+      - /opt/gradle/gradle-6.8.3/bin/gradle clean
+      - /opt/gradle/gradle-6.8.3/bin/gradle assemble
+      - echo Pre-build finished on `date`
+  build:
+    commands:
+      - echo Build started on `date`
+      - echo Building the Docker image KeyManager-gRPC...
+      - docker build -t "$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG" .
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - echo Logging into Amazon ECR...
+      - docker login --username $DOCKER_USER --password $DOCKER_PASSWORD
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG
+      - printf '[{"name":"<key-manager-grpc-docker>","imageUri":"%s"}]' $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG > imagedefinitions.json
+      - sh build.sh
+artifacts:
+  files:
+    - imagedefinitions.json

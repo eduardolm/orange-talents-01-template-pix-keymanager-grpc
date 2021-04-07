@@ -237,4 +237,81 @@ class KeyServiceTest {
 
         assertThrows(IllegalArgumentException::class.java) { keyService.findAllByClientId("")}
     }
+
+    @Test
+    fun `test buildKeyResponseRest`() {
+        val keyService = KeyService(bcbClient, repository, parser)
+
+        val response = keyService.buildKeyResponseRest(pixKey, pixKeyRequest)
+
+        assertEquals(pixKey.ownerId, response?.clientId)
+        assertEquals(pixKey.pixId, response?.pixId)
+        assertEquals(pixKey.createdAt, response?.createdAt)
+    }
+
+    @Test
+    fun `test buildKeyListResponse`() {
+        val keyService = KeyService(bcbClient, repository, parser)
+
+        val pixKeyItem: KeyListResponse.PixKeyItem = KeyListResponse.PixKeyItem.newBuilder()
+            .setAccountType(AccountType.valueOf(if (pixKey.bankAccountType == "CACC") "CONTA_CORRENTE" else "CONTA_POUPANCA"))
+            .setKeyType(KeyType.valueOf(pixKey.keyType))
+            .setPixId(pixKey.pixId)
+            .setPixKey(pixKey.pixKey)
+            .build()
+
+        val responseList = listOf(pixKeyItem)
+        val response = keyService.buildKeyListResponse(KeyListRequest.newBuilder().setClientId(pixKey.ownerId).build(),
+            responseList)
+
+        assertEquals(pixKey.ownerId, response?.clientId)
+    }
+
+    @Test
+    fun `test buildPixKeyItem when account type is CONTA_POUPANCA`() {
+        val keyService = KeyService(bcbClient, repository, parser)
+        val pixKey2 = PixKey(
+            "bc3b1cdd-8b06-4bcd-abe3-11535b275134",
+            "CPF",
+            "06628726061",
+            "0d1bb194-3c52-4e67-8c35-a93c0af9284f",
+            "NATURAL_PERSON",
+            "Alberto Tavares",
+            "06628726061",
+            "0001",
+            "212233",
+            "60701190",
+            "ITAÚ UNIBANCO S.A.",
+            "SVGS",
+            "2021-15-02t12:33"
+        )
+
+        val response = keyService.buildPixKeyItem(pixKey2)
+
+        assertEquals("CONTA_POUPANCA", response.accountType.toString())
+    }
+
+    @Test
+    fun `test buildPixKeyItem when account type is TIPO_DESCONHECIDO`() {
+        val keyService = KeyService(bcbClient, repository, parser)
+        val pixKey2 = PixKey(
+            "bc3b1cdd-8b06-4bcd-abe3-11535b275134",
+            "CPF",
+            "06628726061",
+            "0d1bb194-3c52-4e67-8c35-a93c0af9284f",
+            "NATURAL_PERSON",
+            "Alberto Tavares",
+            "06628726061",
+            "0001",
+            "212233",
+            "60701190",
+            "ITAÚ UNIBANCO S.A.",
+            "TESTE",
+            "2021-15-02t12:33"
+        )
+
+        val response = keyService.buildPixKeyItem(pixKey2)
+
+        assertEquals("UNKNOWN_ACCOUNT_TYPE", response.accountType.toString())
+    }
 }
