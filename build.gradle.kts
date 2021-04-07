@@ -43,10 +43,9 @@ dependencies {
     runtimeOnly("ch.qos.logback:logback-classic")
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
     runtimeOnly("mysql:mysql-connector-java")
-    testImplementation("org.testcontainers:testcontainers")
-    testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.testcontainers:mysql")
     testImplementation("org.mockito:mockito-core")
+    testImplementation("com.h2database:h2")
 }
 
 
