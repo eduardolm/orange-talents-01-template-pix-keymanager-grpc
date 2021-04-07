@@ -80,6 +80,10 @@ sourceSets {
     }
 }
 
+allOpen {
+    annotation("Validated")
+}
+
 protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:3.14.0"

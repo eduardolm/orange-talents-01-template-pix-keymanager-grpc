@@ -47,13 +47,6 @@ message PixKeyResponse {
   string createdAt = 7;
 }
 
-message ResponseAccount {
-  string bankParticipant = 1;
-  string bankBranch = 2;
-  string bankAccountNumber = 3;
-  AccountType bankAccountType = 4;
-}
-
 message ResponseOwner {
   string name = 1;
   string taxIdNumber = 2;
@@ -94,11 +87,6 @@ enum AccountType {
   CONTA_POUPANCA = 2;
 }
 
-enum OwnerType {
-  NATURAL_PERSON = 0;
-  LEGAL_PERSON = 1;
-}
-
 enum KeyType {
   UNKNOWN_KEY_TYPE = 0;
   CPF = 1;
@@ -109,12 +97,6 @@ enum KeyType {
 }
 
 message Owner {
-  string id = 1;
-  string name = 2;
-  string taxIdNumber = 3;
-}
-
-message OwnerResponse {
   string id = 1;
   string name = 2;
   string taxIdNumber = 3;
