@@ -14,14 +14,15 @@ import com.google.protobuf.Any
 import com.google.rpc.Status
 import io.grpc.protobuf.StatusProto
 import io.grpc.stub.StreamObserver
+import io.micronaut.validation.Validated
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.*
 import java.util.stream.Collectors
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
+@Validated
 class KeyService(
     @Inject val bcbClient: BcbClient,
     @Inject val repository: PixKeyRepository,
@@ -88,6 +89,7 @@ class KeyService(
                 return@map bcbClient.delete(it.pixKey, RemoveKeyRequestDto(it))
             }
             .map {
+                logger.info("Chave ${request.pixId} removida com sucesso.")
                 KeyRemoveResponse.newBuilder()
                     .setKey(it.key)
                     .setParticipant(it.participant)
@@ -117,7 +119,7 @@ class KeyService(
         }
     }
 
-    fun buildPixKeyItem(it: PixKey) = KeyListResponse.PixKeyItem.newBuilder()
+    fun buildPixKeyItem(it: PixKey): KeyListResponse.PixKeyItem = KeyListResponse.PixKeyItem.newBuilder()
         .setPixId(it.pixId)
         .setKeyType(KeyType.valueOf(it.keyType))
         .setPixKey(it.pixKey)
@@ -126,7 +128,7 @@ class KeyService(
                 when (it.bankAccountType) {
                     "CACC" -> "CONTA_CORRENTE"
                     "SVGS" -> "CONTA_POUPANCA"
-                    else -> "TIPO_DESCONHECIDO"
+                    else -> "UNKNOWN_ACCOUNT_TYPE"
                 }
             )
         )
